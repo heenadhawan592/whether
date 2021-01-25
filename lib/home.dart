@@ -17,7 +17,13 @@ class HomeState extends State<Home> {
   TextEditingController query = TextEditingController();
   List<Widget> vBrand = [];
   NetworkUtil _netUtil = new NetworkUtil();
-
+String cityname;
+String localtime;
+String temperature;
+String weather_icons;
+String humidity;
+String feelslike;
+String pressure;
   void whether({BuildContext context}) async {
     _netUtil.get(
         "forecast?access_key=a3fd7937c2b651f30024b0cf5a7a3cfe&query=${query.text}",
@@ -27,7 +33,28 @@ class HomeState extends State<Home> {
       print(response.body);
       print("Body");
       var extracted = json.decode(response.body);
+print(extracted["location"]["name"]);
+cityname=extracted["location"]["name"];
+temperature =extracted["current"]["temperature"].toString();
+localtime=  extracted["location"]["localtime"].toString();
+      pressure=extracted["current"]["pressure"].toString();
+      humidity=extracted["current"]["humidity"].toString();
+      feelslike=extracted["current"]["feelslike"].toString();
+      weather_icons=extracted["current"]["weather_icons"][0];
 
+print(temperature);
+print(localtime);
+print(pressure);
+print(humidity);
+print(feelslike);
+print(weather_icons);
+if(response.statusCode==200){
+  setState(() {
+    query.text=cityname;
+
+  });
+
+}
     }).catchError((error) {
       print(error.toString());
     });
@@ -35,6 +62,7 @@ class HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+
     // TODO: implement build
     return Scaffold(
       appBar: AppBar(
@@ -69,25 +97,32 @@ class HomeState extends State<Home> {
                 children: [
                   Container(
                     margin: EdgeInsets.all(10.0),
-                    child: Text(
-                      "Tuesday,25 jan 2021",
+                    child: localtime!=null?Text(
+                    localtime,
                       style: TextStyle(color: Colors.black38, fontSize: 14),
-                    ),
+                    ):Container()
                   ),
-                  Container(
-                    margin: EdgeInsets.all(10.0),
-                    child: Text(
-                      "4:00 pm",
-                      style: TextStyle(color: Colors.black38, fontSize: 14),
-                    ),
-                  ),
+                  // Container(
+                  //   margin: EdgeInsets.all(10.0),
+                  //   child: Text(
+                  //     "4:00 pm",
+                  //     style: TextStyle(color: Colors.black38, fontSize: 14),
+                  //   ),
+                  // ),
                 ],
               ),
               Container(
                 margin: EdgeInsets.only(
                   top: 80,
                 ),
-                child: Text(
+                child: cityname!=null?Text(
+                  cityname,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 40,
+                    color: Colors.black38,
+                  ),
+                ):Text(
                   "Kolkata",
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -109,33 +144,23 @@ class HomeState extends State<Home> {
                   ),
                 ),
               ),
-              Container(
-                color: Colors.black38,
-                height: 60,
-                width: 80,
-                margin: EdgeInsets.only(
-                  top: 10,
-                ),
-                padding: const EdgeInsets.all(15.0),
-                // decoration: BoxDecoration(
-                //     border: Border.all(color: Colors.blueAccent)
-                // ),
-                child: Text(
-                  "Mist",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white, fontSize: 20),
-                ),
-              ),
+             weather_icons!=null?Image.network(
+                 weather_icons,
+                  height:70,
+                  width:70,
+                  fit: BoxFit.cover,
+                ):Container(),
+
               Container(
                 margin: EdgeInsets.only(top: 10),
-                child: Text(
-                  "32 degree",
+                child:temperature!=null? Text(
+                  temperature,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 30,
                     color: Colors.black38,
                   ),
-                ),
+                ):Container(),
               ),
               Container(
                 margin: EdgeInsets.only(top: 10),
@@ -156,14 +181,23 @@ class HomeState extends State<Home> {
                       Container(
                         margin: EdgeInsets.only(left: 20, top: 10),
                         // margin: EdgeInsets.only(top: 10,left: 140),
-                        child: Text(
-                          "89%",
+                        child:
+
+                        humidity!=null?Text(
+                         humidity,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.black38,
                           ),
-                        ),
+                        ):Container(child:Text(
+                          "89",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black38,
+                          ),
+                        )),
                       ),
                       Container(
                         // margin: EdgeInsets.only(top: 10,left: 140),
@@ -183,14 +217,21 @@ class HomeState extends State<Home> {
                       Container(
                         margin: EdgeInsets.only(left: 20, top: 10),
                         // margin: EdgeInsets.only(top: 10,left: 140),
-                        child: Text(
+                        child:feelslike!=null? Text(
+                        feelslike,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black38,
+                          ),
+                        ):Container( child: Text(
                           "43 degree",
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.black38,
                           ),
-                        ),
+                        ),),
                       ),
                       Container(
                         margin: EdgeInsets.only(left: 20),
@@ -209,12 +250,22 @@ class HomeState extends State<Home> {
                     children: [
                       Container(
                         margin: EdgeInsets.only(left: 20, top: 10),
-                        child: Text(
-                          "1001mBar",
+                        child: pressure!=null?Text(
+                         pressure,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.black38,
+                          ),
+                        ): Container(
+                          margin: EdgeInsets.only(left: 20, top: 10),
+                          child: Text(
+                            "1001mBar",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black38,
+                            ),
                           ),
                         ),
                       ),

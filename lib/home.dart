@@ -17,17 +17,10 @@ class Home extends StatefulWidget {
 class HomeState extends State<Home> {
 
   TextEditingController query = TextEditingController();
-  List<Widget> vBrand = [];
+
   NetworkUtil _netUtil = new NetworkUtil();
-  String cityname;
-  String localtime;
-  String temperature;
-  String weather_icons;
-  String humidity;
-  String feelslike;
-  String pressure;
-  var isLoading = false;
-  Future<Temprature> futureTemprature;
+
+  Future<List<Temprature>> futureTemprature;
 
 
 
@@ -56,7 +49,7 @@ class HomeState extends State<Home> {
         ),
         body: Center(
           child: FutureBuilder<Temprature>(
-            future: futureTemprature,
+
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 return  Container(

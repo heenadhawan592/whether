@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 class Temprature {
   final String name;
   final String localtime;
-  final int temperature,pressure,humidity,feelslike;
+   int temperature,pressure,humidity,feelslike;
   final String image;
 
   Temprature(this.name, this.localtime,this.humidity,this.feelslike ,this.pressure,this.temperature, this.image);

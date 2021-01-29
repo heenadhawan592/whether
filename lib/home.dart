@@ -17,64 +17,28 @@ class Home extends StatefulWidget {
 class HomeState extends State<Home> {
 
   TextEditingController query = TextEditingController();
-  List<Widget> vBrand = [];
-  NetworkUtil _netUtil = new NetworkUtil();
-  String cityname;
-  String localtime;
-  String temperature;
-  String weather_icons;
-  String humidity;
-  String feelslike;
-  String pressure;
-  var isLoading = false;
 
-  List<Temprature> parseProducts(String responseBody) {
-    final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
-    return parsed.map<Temprature>((json) => Temprature.fromMap(json)).toList();
+
+  Future<Temprature> futureTemprature;
+  @override
+  void initState() {
+    super.initState();
+    futureTemprature = fetchWhether();
   }
-  Future<List<Temprature>> fetchProducts() async {
-    final response = await http.get('http://api.weatherstack.com/orecast?access_key=a3fd7937c2b651f30024b0cf5a7a3cfe&query=${query.text}');
+
+  Future<Temprature> fetchWhether() async {
+    final response =
+    await http.get('http://api.weatherstack.com/forecast?access_key=a3fd7937c2b651f30024b0cf5a7a3cfe&query=${query.text}');
+
     if (response.statusCode == 200) {
-      return parseProducts(response.body);
+
+      return Temprature.fromMap(jsonDecode(response.body));
     } else {
-      throw Exception('Unable to fetch products from the REST API');
+
+      throw Exception('Failed to load album');
     }
   }
-  void whether({BuildContext context}) async {
-    isLoading = true;
-    _netUtil.get(
-        "forecast?access_key=a3fd7937c2b651f30024b0cf5a7a3cfe&query=${query.text}",
-        headers: {"Content-Type": "application/json"}).then((response) {
-      print("whether");
-      print(response.request.headers);
-      print(response.body);
-      print("Body");
-      var extracted = json.decode(response.body);
-      print(extracted["location"]["name"]);
-      cityname = extracted["location"]["name"];
-      temperature = extracted["current"]["temperature"].toString();
-      localtime = extracted["location"]["localtime"].toString();
-      pressure = extracted["current"]["pressure"].toString();
-      humidity = extracted["current"]["humidity"].toString();
-      feelslike = extracted["current"]["feelslike"].toString();
-      weather_icons = extracted["current"]["weather_icons"][0];
 
-      print(temperature);
-      print(localtime);
-      print(pressure);
-      print(humidity);
-      print(feelslike);
-      print(weather_icons);
-      if (response.statusCode == 200) {
-        setState(() {
-          query.text = cityname;
-          isLoading = false;
-        });
-      }
-    }).catchError((error) {
-      print(error.toString());
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,307 +57,263 @@ class HomeState extends State<Home> {
           ),
           automaticallyImplyLeading: false,
         ),
-        body: isLoading
-            ? Center(
-          child: CircularProgressIndicator(),
-        )
-            :   Container(
-            decoration: BoxDecoration(
-                gradient: LinearGradient(
-                    begin: Alignment.bottomLeft,
-                    end: Alignment.topRight,
-                    // Add one stop for each color
-                    // Values should increase from 0.0 to 1.0
-                    stops: [
-                  0.1,
-                  0.5,
-                  0.8,
-                ],
-                    colors: [
-                  Colors.red,
-                  Colors.yellow,
-                  Colors.yellowAccent
-                ])),
-            child: Column(mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Container(
-                  margin: EdgeInsets.only(top: 10,right: 170,left: 10),
-                    child: temperature != null
-                              ? Text(
-                                  localtime,
-                                  style: TextStyle(
-                                      color: Colors.black38, fontSize: 16, fontWeight: FontWeight.w500,),
-                                )
-                              : Container(child: Text(
-                     "Tuesday, 26 July 2021",
-                      style: TextStyle(
-                          color: Colors.black38, fontSize: 16, fontWeight: FontWeight.w500),
-                    ),)),
-                Container(
-                    margin: EdgeInsets.only(top: 10,right: 170,left: 10),
-                    child: localtime != null
-                        ? Text(
-                      localtime,
-                      style: TextStyle(
-                          color: Colors.black38, fontSize: 16, fontWeight: FontWeight.w500),
-                    )
-                        : Container(child: Text(
-                      "15:37 pm",
-                      style: TextStyle(
-                          color: Colors.black38, fontSize: 16, fontWeight: FontWeight.w500),
-                    ),)),
-                Container(
-                  alignment: Alignment.center,
-                  margin: EdgeInsets.only(top: 100),
-                  child: Column(
+        body: Center(
+          child: FutureBuilder<Temprature>(
+            future: futureTemprature,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return  Container(
+                  decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                          begin: Alignment.bottomLeft,
+                          end: Alignment.topRight,
+                          // Add one stop for each color
+                          // Values should increase from 0.0 to 1.0
+                          stops: [
+                            0.1,
+                            0.5,
+                            0.8,
+                          ],
+                          colors: [
+                            Colors.red,
+                            Colors.yellow,
+                            Colors.yellowAccent
+                          ])),
+                  child: Column(mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Container(
-                        child: cityname != null
-                              ? Text(
-                                  cityname,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 40,
-                                    color: Colors.black38,
-                                  ),
-                                )
-                              : Text(
-                                  "Delhi",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 40,
-                                    color: Colors.black38,
-                                  ),
-                                ),
-                      ),
-
+                          margin: EdgeInsets.only(top: 10,right: 170,left: 10),
+                          child:  Text(
+                            "Tuesday, 26 July 2021",
+                            style: TextStyle(
+                              color: Colors.black38, fontSize: 16, fontWeight: FontWeight.w500,),
+                          )
+                             ),
                       Container(
-                        margin: EdgeInsets.only(
-                          top: 10,
-                        ),
-                        child: Text(
-                          "India",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 30,
-                            color: Colors.black38,
-                          ),
-                        ),
-                      ),
-                      ClipRRect(
-                        borderRadius:
-                        BorderRadius.circular(8.0),
-                        child: weather_icons != null
-                            ? Image.network(
-                                weather_icons,
+                          margin: EdgeInsets.only(top: 10,right: 170,left: 10),
+                          child:Text(
+                            snapshot.data.localtime.toString(),
+                            style: TextStyle(
+                                color: Colors.black38, fontSize: 16, fontWeight: FontWeight.w500),
+                          )
+                            ),
+                      Container(
+                        alignment: Alignment.center,
+                        margin: EdgeInsets.only(top: 100),
+                        child: Column(
+                          children: [
+                            Container(
+                              child:Text(
+                                snapshot.data.name,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 40,
+                                  color: Colors.black38,
+                                ),
+                              )
+
+                            ),
+
+                            Container(
+                              margin: EdgeInsets.only(
+                                top: 10,
+                              ),
+                              child: Text(
+                                "India",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 30,
+                                  color: Colors.black38,
+                                ),
+                              ),
+                            ),
+                            ClipRRect(
+                              borderRadius:
+                              BorderRadius.circular(8.0),
+                              child:Image.network(
+                                snapshot.data.image,
                                 height: 120,
                                 width: 120,
                                 fit: BoxFit.cover,
                               )
-                            : ClipRRect( borderRadius:
-                        BorderRadius.circular(8.0),child: Image.network(
-                          "https://assets.weatherstack.com/images/wsymbols01_png_64/wsymbol_0004_black_low_cloud.png",
-                          height:120,
-                          width: 120,
-                          fit: BoxFit.cover,
-                        ),),
-                      ),
-                      Container(
-                        margin: EdgeInsets.only(top: 10),
-                        child: temperature != null
-                            ? Text(
-                                temperature+ "\u2103",
+
+                            ),
+                            Container(
+                              margin: EdgeInsets.only(top: 10),
+                              child:  Text(
+                                snapshot.data.temperature.toString()+ "\u2103",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 30,   fontWeight: FontWeight.w500,
                                   color: Colors.black38,
                                 ),
                               )
-                            : Container(child: Text( " 20 \u2103" ,textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 30,   fontWeight: FontWeight.w500,
-                            color: Colors.black38,
-                          ),),),
+
+                            ),
+                            Container(
+                              margin: EdgeInsets.only(top: 10),
+                              child: Text(
+                                "Haze",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 30,
+                                  color: Colors.black38,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container( alignment: Alignment.center,
+                          child: IntrinsicHeight(
+                            child: Row(mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Column(
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.only(left: 20, top: 10),
+                                      // margin: EdgeInsets.only(top: 10,left: 140),
+                                      child:Text(
+                                        snapshot.data.humidity.toString() ,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black38,
+                                        ),
+                                      )
+
+                                    ),
+                                    Container(
+                                      // margin: EdgeInsets.only(top: 10,left: 140),
+                                      child: Text(
+                                        "Humidity",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black38,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                VerticalDivider(
+                                  thickness: 2,
+                                  width: 20,
+                                  color: Colors.grey,
+                                ),
+                                Column(
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.only(left: 20, top: 10),
+                                      // margin: EdgeInsets.only(top: 10,left: 140),
+                                      child:  Text(
+                                        snapshot.data.feelslike.toString()+"  \u2103",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.black38,
+                                        ),
+                                      )
+
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.only(left: 10),
+                                      child: Text(
+                                        "Feel Like",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black38,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                VerticalDivider(
+                                  thickness: 2,
+                                  width: 20,
+                                  color: Colors.grey,
+                                ),
+                                Column(
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.only(left: 20, top: 10),
+                                      // margin: EdgeInsets.only(top: 10,left: 140),
+                                      child: Text(
+                                        snapshot.data.feelslike.toString(),
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black38,
+                                        ),
+                                      )
+
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.only(left: 10),
+                                      child: Text(
+                                        "Feel Like",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black38,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          )
                       ),
                       Container(
-                        margin: EdgeInsets.only(top: 10),
-                        child: Text(
-                          "Haze",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 30,
-                            color: Colors.black38,
-                          ),
-                        ),
+                        // color: Colors.white,
+                        decoration: BoxDecoration( borderRadius: BorderRadius.circular(30.0),),
+                        margin: EdgeInsets.all(20.0),
+                        padding: const EdgeInsets.all(20.0),
+                        child: TextField(
+                            controller: query,
+                            onSubmitted: (value) {
+                              futureTemprature = fetchWhether();
+                              // whether(context: context);
+                            },
+                            style: TextStyle(
+                              fontSize: 25.0,
+                              color: Colors.black,
+                            ),
+                            decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Color(0xfff6f6f6),
+                                contentPadding:
+                                EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                                suffixIcon: Icon(Icons.search,color:Colors.yellow,size: 30 ,),
+                                hintText: "Enter city Name ",hintStyle: TextStyle(color: Colors.yellow),
+                                border: OutlineInputBorder(
+                                    borderSide:
+                                    BorderSide(color: Colors.yellow, width: 32.0),
+                                    borderRadius: BorderRadius.circular(10.0)),
+                                focusedBorder: OutlineInputBorder(
+                                    borderSide:
+                                    BorderSide(color: Colors.white, width: 32.0),
+                                    borderRadius: BorderRadius.circular(14.0)))),
                       ),
+
+
                     ],
                   ),
-                ),
-                Container( alignment: Alignment.center,
-                  child: IntrinsicHeight(
-                    child: Row(mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Column(
-                          children: [
-                            Container(
-                              margin: EdgeInsets.only(left: 20, top: 10),
-                              // margin: EdgeInsets.only(top: 10,left: 140),
-                              child: humidity != null
-                                  ? Text(
-                                humidity+" %",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black38,
-                                ),
-                              )
-                                  : Container(
-                                  child: Text(
-                                    "89 %",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black38,
-                                    ),
-                                  )),
-                            ),
-                            Container(
-                              // margin: EdgeInsets.only(top: 10,left: 140),
-                              child: Text(
-                                "Humidity",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black38,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        VerticalDivider(
-                          thickness: 2,
-                          width: 20,
-                          color: Colors.grey,
-                        ),
-                        Column(
-                          children: [
-                            Container(
-                              margin: EdgeInsets.only(left: 20, top: 10),
-                              // margin: EdgeInsets.only(top: 10,left: 140),
-                              child: feelslike != null
-                                  ? Text(
-                                feelslike+"  \u2103",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.black38,
-                                ),
-                              )
-                                  : Container(
-                                  child: Text(
-                                    " 20 \u2103",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.black38,
-                                    ),
-                                  )),
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(left: 10),
-                              child: Text(
-                                "Feel Like",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black38,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        VerticalDivider(
-                          thickness: 2,
-                          width: 20,
-                          color: Colors.grey,
-                        ),
-                        Column(
-                          children: [
-                            Container(
-                              margin: EdgeInsets.only(left: 20, top: 10),
-                              // margin: EdgeInsets.only(top: 10,left: 140),
-                              child: pressure != null
-                                  ? Text(
-                                pressure,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black38,
-                                ),
-                              )
-                                  : Container(
-                                  child: Text(
-                                    "1003mBar",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black38,
-                                    ),
-                                  )),
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(left: 10),
-                              child: Text(
-                                "Feel Like",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black38,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  )
-                ),
-            Container(
-             // color: Colors.white,
-                decoration: BoxDecoration( borderRadius: BorderRadius.circular(30.0),),
-                margin: EdgeInsets.all(20.0),
-                padding: const EdgeInsets.all(20.0),
-                child: TextField(
-                    controller: query,
-                    onSubmitted: (value) {
+                );
+              } else if (snapshot.hasError) {
+                return Text("${snapshot.error}");
+              }
 
-                      whether(context: context);
-                    },
-                    style: TextStyle(
-                      fontSize: 25.0,
-                      color: Colors.black,
-                    ),
-                    decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Color(0xfff6f6f6),
-                        contentPadding:
-                            EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                        suffixIcon: Icon(Icons.search,color:Colors.yellow,size: 30 ,),
-                        hintText: "Enter city Name ",hintStyle: TextStyle(color: Colors.yellow),
-                        border: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.yellow, width: 32.0),
-                            borderRadius: BorderRadius.circular(10.0)),
-                        focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.white, width: 32.0),
-                            borderRadius: BorderRadius.circular(14.0)))),
-              ),
-
-
-              ],
-            ),
+              // By default, show a loading spinner.
+              return CircularProgressIndicator();
+            },
           ),
+        ),
+
+
+
         );
   }
 }

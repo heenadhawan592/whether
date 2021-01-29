@@ -1,7 +1,8 @@
 import 'dart:convert';
-
+import 'package:http/http.dart' as http;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:whether/Temprature.dart';
 import 'package:whether/constants.dart';
 import 'package:whether/networkutil.dart';
 
@@ -14,6 +15,7 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home> {
+
   TextEditingController query = TextEditingController();
   List<Widget> vBrand = [];
   NetworkUtil _netUtil = new NetworkUtil();
@@ -25,6 +27,19 @@ class HomeState extends State<Home> {
   String feelslike;
   String pressure;
   var isLoading = false;
+
+  List<Temprature> parseProducts(String responseBody) {
+    final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
+    return parsed.map<Temprature>((json) => Temprature.fromMap(json)).toList();
+  }
+  Future<List<Temprature>> fetchProducts() async {
+    final response = await http.get('http://api.weatherstack.com/orecast?access_key=a3fd7937c2b651f30024b0cf5a7a3cfe&query=${query.text}');
+    if (response.statusCode == 200) {
+      return parseProducts(response.body);
+    } else {
+      throw Exception('Unable to fetch products from the REST API');
+    }
+  }
   void whether({BuildContext context}) async {
     isLoading = true;
     _netUtil.get(
@@ -71,6 +86,11 @@ class HomeState extends State<Home> {
             "Whether App",
             style: TextStyle(fontSize: 22, color: Colors.black87),
           ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(20),
+            ),
+          ),
           automaticallyImplyLeading: false,
         ),
         body: isLoading
@@ -97,19 +117,31 @@ class HomeState extends State<Home> {
             child: Column(mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Container(
-                  margin: EdgeInsets.only(top: 10,right: 140,left: 10),
-                    child: localtime != null
+                  margin: EdgeInsets.only(top: 10,right: 170,left: 10),
+                    child: temperature != null
                               ? Text(
                                   localtime,
                                   style: TextStyle(
-                                      color: Colors.black38, fontSize: 16),
+                                      color: Colors.black38, fontSize: 16, fontWeight: FontWeight.w500,),
                                 )
                               : Container(child: Text(
-                     "26 jan 2021",
+                     "Tuesday, 26 July 2021",
                       style: TextStyle(
-                          color: Colors.black38, fontSize: 16),
+                          color: Colors.black38, fontSize: 16, fontWeight: FontWeight.w500),
                     ),)),
-
+                Container(
+                    margin: EdgeInsets.only(top: 10,right: 170,left: 10),
+                    child: localtime != null
+                        ? Text(
+                      localtime,
+                      style: TextStyle(
+                          color: Colors.black38, fontSize: 16, fontWeight: FontWeight.w500),
+                    )
+                        : Container(child: Text(
+                      "15:37 pm",
+                      style: TextStyle(
+                          color: Colors.black38, fontSize: 16, fontWeight: FontWeight.w500),
+                    ),)),
                 Container(
                   alignment: Alignment.center,
                   margin: EdgeInsets.only(top: 100),
@@ -342,18 +374,20 @@ class HomeState extends State<Home> {
                       color: Colors.black,
                     ),
                     decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Color(0xfff6f6f6),
                         contentPadding:
                             EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                        suffixIcon: Icon(Icons.search),
-                        hintText: "Enter city name ",
+                        suffixIcon: Icon(Icons.search,color:Colors.yellow,size: 30 ,),
+                        hintText: "Enter city Name ",hintStyle: TextStyle(color: Colors.yellow),
                         border: OutlineInputBorder(
                             borderSide:
-                                BorderSide(color: Colors.black, width: 32.0),
-                            borderRadius: BorderRadius.circular(25.0)),
+                                BorderSide(color: Colors.yellow, width: 32.0),
+                            borderRadius: BorderRadius.circular(10.0)),
                         focusedBorder: OutlineInputBorder(
                             borderSide:
                                 BorderSide(color: Colors.white, width: 32.0),
-                            borderRadius: BorderRadius.circular(25.0)))),
+                            borderRadius: BorderRadius.circular(14.0)))),
               ),
 
 

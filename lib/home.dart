@@ -17,28 +17,25 @@ class Home extends StatefulWidget {
 class HomeState extends State<Home> {
 
   TextEditingController query = TextEditingController();
-
-
+  List<Widget> vBrand = [];
+  NetworkUtil _netUtil = new NetworkUtil();
+  String cityname;
+  String localtime;
+  String temperature;
+  String weather_icons;
+  String humidity;
+  String feelslike;
+  String pressure;
+  var isLoading = false;
   Future<Temprature> futureTemprature;
-  @override
-  void initState() {
-    super.initState();
-    futureTemprature = fetchWhether();
+
+
+
+  void whether({BuildContext context}) async {
+
+    _netUtil.fetchWhether();
+
   }
-
-  Future<Temprature> fetchWhether() async {
-    final response =
-    await http.get('http://api.weatherstack.com/forecast?access_key=a3fd7937c2b651f30024b0cf5a7a3cfe&query=${query.text}');
-
-    if (response.statusCode == 200) {
-
-      return Temprature.fromMap(jsonDecode(response.body));
-    } else {
-
-      throw Exception('Failed to load album');
-    }
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -274,8 +271,8 @@ class HomeState extends State<Home> {
                         child: TextField(
                             controller: query,
                             onSubmitted: (value) {
-                              futureTemprature = fetchWhether();
-                              // whether(context: context);
+                             // futureTemprature = fetchWhether();
+                               whether(context: context);
                             },
                             style: TextStyle(
                               fontSize: 25.0,
